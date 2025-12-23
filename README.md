@@ -51,51 +51,61 @@ head(preprocess_res$cleaned_data)  # Full cleaned dataset
 ### Model Trainings
 ```r
 set.seed(42)
-cvd_model <- train_cvd_rf(
-  cleaned_data = preprocess_res$cleaned_data,
-  cv_folds = 5,    
-  num_trees = 400  
+trained_model <- train_cvd_rf(
+  cleaned_data = cleaned_data,
+  cv_folds = 5,    # Number of cross-validation folds (default: 5)
+  num_trees = 400  # Number of trees in the random forest (balances performance/speed)
 )
+cat("Best Hyperparameters:\n")
+print(trained_model$model$bestTune)
+```
 
-cvd_model$model$bestTune
+### Evaluate model performance
+```r
+eval_results <- evaluate_cvd_model(model_obj = trained_model)
+
+cat("\n=== Test Set Performance Metrics ===\n")
+cat("AUROC:", round(eval_results$auroc, 3), "\n")          
+cat("AUPRC:", round(eval_results$auprc, 3), "\n")        
+cat("Accuracy:", round(eval_results$confusion_matrix$overall["Accuracy"], 3), "\n")
+cat("Sensitivity:", round(eval_results$confusion_matrix$byClass["Sensitivity"], 3), "\n")
+cat("Specificity:", round(eval_results$confusion_matrix$byClass["Specificity"], 3), "\n")  
+
+ggplot(eval_results$roc_curve_data, aes(x = FPR, y = TPR)) +
+  geom_line(linewidth = 1.2, color = "#2E86AB") +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "gray50") +
+  labs(
+    title = "ROC Curve (Test Set)",
+    subtitle = paste("AUROC =", round(eval_results$auroc, 3)),
+    x = "False Positive Rate",
+    y = "True Positive Rate"
+  ) +
+  theme_classic(base_size = 12)
+
 ```
 
 ### Prediction
 ```r
-set.seed(42)
-new_patient <- tibble::tibble(
-  age = 25000,  # ~68 years (converted to years automatically)
-  gender = 2,   # 1=Female, 2=Male
-  height = 175, # cm
-  weight = 80,  # kg
-  ap_hi = 140,  # Systolic BP
-  ap_lo = 90,   # Diastolic BP
-  cholesterol = 2,  # Above normal
-  gluc = 1,     # Normal
-  smoke = 0,    # Non-smoker
-  alco = 0,     # Non-drinker
-  active = 1    # Physically active
+new_patients <- tibble::tibble(
+  age = c(22000, 18250),  # Age in days (~60 and ~50 years old)
+  gender = factor(c(2, 1), levels = c(1, 2), labels = c("Female", "Male")),  # Male, Female
+  height = c(178, 165),   # Height in centimeters
+  weight = c(85, 68),     # Weight in kilograms
+  ap_hi = c(145, 130),    # Systolic blood pressure (mmHg)
+  ap_lo = c(92, 85),      # Diastolic blood pressure (mmHg)
+  cholesterol = factor(c(2, 1), levels = c(1, 2, 3)),  # Above normal, Normal
+  gluc = factor(c(1, 1), levels = c(1, 2, 3)),         # Normal blood glucose
+  smoke = factor(c(0, 1), levels = c(0, 1)),           # Non-smoker, Smoker
+  alco = factor(c(1, 0), levels = c(0, 1)),            # Alcohol consumer, Non-consumer
+  active = factor(c(0, 1), levels = c(0, 1))           # Inactive, Physically active
 )
 
-# Preprocess & predict
-pred_result <- predict_cvd(
-  model_obj = cvd_model,
-  new_data = new_patient
+predictions <- predict_cvd(
+  model_obj = trained_model,
+  new_data = new_patients
 )
 
-print(pred_result)
-```
-
-### Model Evaluation
-```r
-set.seed(42)
-eval_res <- evaluate_cvd_model(model_obj = cvd_model)
-
-cat("Test Set AUROC:", round(eval_res$auroc, 3), "\n")
-cat("Test Set AUPRC:", round(eval_res$auprc, 3), "\n")
-print(eval_res$confusion_matrix)  
-
-eval_res$roc_curve_plot 
+print(predictions)
 ```
 ---
 ## Model Performance
