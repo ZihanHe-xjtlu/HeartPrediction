@@ -125,14 +125,16 @@ Key predictors: Systolic BP (ap_hi), diastolic BP (ap_lo), pulse pressure (clini
 ### 4. SHAP Beeswarm Plot (Top 8 Features)
 ![SHAP Beeswarm Plot](inst/images/SHAP_Plot.png)
 SHAP values: Positive = increased CVD risk (e.g., high ap_hi/age), negative = decreased risk.
+
 ---
 ## License
+MIT Licence
 
-MIT License
 ---
 ## Citation
 If you use this package in articles, please cite:
 Zihan He. (2025)   HeartPrediction – CVDprediction: An R Package for Cardiovascular Disease Prediction. GitHub: ZihanHe-xjtlu/HeartPrediction
+
 ---
 ## Contact
 https://github.com/ZihanHe-xjtlu/HeartPrediction/issues￼
