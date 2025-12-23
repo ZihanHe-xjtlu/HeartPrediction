@@ -31,7 +31,7 @@
 #' @importFrom stats median
 preprocess_heart_data <- function(data_path) {
   # Load raw data (suppress warnings for non-standard column types)
-  df_raw <- read.csv(data_path, stringsAsFactors = FALSE, warn = FALSE)
+  df_raw <- read.csv(data_path, stringsAsFactors = FALSE)
   df <- as_tibble(df_raw)
 
   # Step 1: Remove ID-like columns (non-predictive)
